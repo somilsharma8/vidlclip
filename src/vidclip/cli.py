@@ -10,7 +10,7 @@ from pathlib import Path
 import yt_dlp
 
 from vidclip import __version__
-from vidclip.download import download_clip
+from vidclip.download import download_clip, parse_quality
 from vidclip.runtime import bundled_deno_path, ffmpeg_path, js_runtimes, require_tools
 from vidclip.timeparse import parse_timestamp
 
@@ -19,6 +19,8 @@ examples:
   vidclip
   vidclip "https://www.youtube.com/watch?v=VIDEO_ID"
   vidclip "https://www.youtube.com/watch?v=VIDEO_ID" --start 1:20 --end 2:05
+  vidclip "https://www.youtube.com/watch?v=VIDEO_ID" --quality 720
+  vidclip "https://www.youtube.com/watch?v=VIDEO_ID" -q 480
   vidclip doctor
   vidclip update
 """
@@ -28,8 +30,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="vidclip",
         description=(
-            "Download a YouTube video or a time-range clip. Prefers 1080p, "
-            "falls back to 720p. Run with no arguments for an interactive prompt."
+            "Download a YouTube video or a time-range clip. Choose 1080p, 720p, "
+            "or 480p (falls back to a lower size if the chosen one is missing). "
+            "Run with no arguments for an interactive prompt."
         ),
         epilog=EXAMPLES,
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -60,6 +63,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=".",
         help="Directory to write the file into (default: current directory)",
     )
+    parser.add_argument(
+        "-q",
+        "--quality",
+        default="1080",
+        help="Resolution: 1080, 720, or 480 (default: 1080)",
+    )
     return parser
 
 
@@ -70,15 +79,16 @@ def _prompt(label: str) -> str:
         return ""
 
 
-def interactive_download() -> tuple[str, str | None, str | None, str | None]:
+def interactive_download() -> tuple[str, str | None, str | None, str | None, str]:
     print("vidclip — paste a YouTube link. Leave clip times blank to download the full video.")
     url = _prompt("YouTube URL: ")
     if not url:
         raise SystemExit("error: a YouTube URL is required")
     start = _prompt("Start time (e.g. 1:20, blank = beginning): ") or None
     end = _prompt("End time (e.g. 2:05, blank = end): ") or None
+    quality = _prompt("Quality: 1080, 720, or 480 (blank = 1080): ") or "1080"
     output = _prompt("Save as (blank = video title): ") or None
-    return url, start, end, output
+    return url, start, end, output, quality
 
 
 def run_doctor() -> int:
@@ -120,11 +130,13 @@ def run_download(args: argparse.Namespace) -> int:
     start_text = args.start
     end_text = args.end
     output_text = args.output
+    quality_text = args.quality
     if not url:
-        url, start_text, end_text, output_text = interactive_download()
+        url, start_text, end_text, output_text, quality_text = interactive_download()
 
     start = parse_timestamp(start_text) if start_text else None
     end = parse_timestamp(end_text) if end_text else None
+    quality = parse_quality(quality_text)
     ffmpeg, runtimes = require_tools()
     saved = download_clip(
         url,
@@ -134,6 +146,7 @@ def run_download(args: argparse.Namespace) -> int:
         out_dir=Path(args.out_dir),
         ffmpeg=ffmpeg,
         js_runtimes=runtimes,
+        quality=quality,
     )
     if saved:
         print(f"Saved: {saved.resolve()}")

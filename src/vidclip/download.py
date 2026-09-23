@@ -4,15 +4,27 @@ from pathlib import Path
 
 import yt_dlp
 
-# Prefer 1080p MP4 when possible, then 720p, then the best video at or below 1080p.
-FORMAT = (
-    "bestvideo[height=1080][ext=mp4]+bestaudio[ext=m4a]/"
-    "bestvideo[height=1080]+bestaudio/"
-    "bestvideo[height=720][ext=mp4]+bestaudio[ext=m4a]/"
-    "bestvideo[height=720]+bestaudio/"
-    "bestvideo[height<=1080]+bestaudio/"
-    "best[height<=1080]"
-)
+QUALITIES = (1080, 720, 480)
+
+
+def parse_quality(value: str) -> int:
+    text = value.strip().lower().rstrip("p")
+    try:
+        height = int(text)
+    except ValueError as exc:
+        raise ValueError("quality must be 1080, 720, or 480") from exc
+    if height not in QUALITIES:
+        raise ValueError("quality must be 1080, 720, or 480")
+    return height
+
+
+def format_selector(height: int) -> str:
+    return (
+        f"bestvideo[height={height}][ext=mp4]+bestaudio[ext=m4a]/"
+        f"bestvideo[height={height}]+bestaudio/"
+        f"bestvideo[height<={height}]+bestaudio/"
+        f"best[height<={height}]"
+    )
 
 
 def download_clip(
@@ -24,6 +36,7 @@ def download_clip(
     out_dir: Path,
     ffmpeg: str,
     js_runtimes: dict[str, dict[str, str]],
+    quality: int = 1080,
 ) -> Path | None:
     if start is not None and end is not None and end <= start:
         raise ValueError("end time must be after start time")
@@ -38,7 +51,7 @@ def download_clip(
         outtmpl = str(out_dir / "%(title)s.%(ext)s")
 
     opts: dict = {
-        "format": FORMAT,
+        "format": format_selector(quality),
         "merge_output_format": "mp4",
         "outtmpl": outtmpl,
         "noplaylist": True,
