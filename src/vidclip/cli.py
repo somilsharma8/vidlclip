@@ -20,7 +20,7 @@ examples:
   vidclip "https://www.youtube.com/watch?v=VIDEO_ID"
   vidclip "https://www.youtube.com/watch?v=VIDEO_ID" --start 1:20 --end 2:05
   vidclip "https://www.youtube.com/watch?v=VIDEO_ID" --quality 720
-  vidclip "https://www.youtube.com/watch?v=VIDEO_ID" -q 480
+  vidclip "https://www.youtube.com/watch?v=VIDEO_ID" -q 360
   vidclip doctor
   vidclip update
 """
@@ -31,7 +31,7 @@ def build_parser() -> argparse.ArgumentParser:
         prog="vidclip",
         description=(
             "Download a YouTube video or a time-range clip. Choose 1080p, 720p, "
-            "or 480p (falls back to a lower size if the chosen one is missing). "
+            "480p, or 360p (falls back to a lower size if the chosen one is missing). "
             "Run with no arguments for an interactive prompt."
         ),
         epilog=EXAMPLES,
@@ -67,7 +67,7 @@ def build_parser() -> argparse.ArgumentParser:
         "-q",
         "--quality",
         default="1080",
-        help="Resolution: 1080, 720, or 480 (default: 1080)",
+        help="Resolution: 1080, 720, 480, or 360 (default: 1080)",
     )
     return parser
 
@@ -86,7 +86,7 @@ def interactive_download() -> tuple[str, str | None, str | None, str | None, str
         raise SystemExit("error: a YouTube URL is required")
     start = _prompt("Start time (e.g. 1:20, blank = beginning): ") or None
     end = _prompt("End time (e.g. 2:05, blank = end): ") or None
-    quality = _prompt("Quality: 1080, 720, or 480 (blank = 1080): ") or "1080"
+    quality = _prompt("Quality: 1080, 720, 480, or 360 (blank = 1080): ") or "1080"
     output = _prompt("Save as (blank = video title): ") or None
     return url, start, end, output, quality
 

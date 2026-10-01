@@ -4,17 +4,18 @@ from pathlib import Path
 
 import yt_dlp
 
-QUALITIES = (1080, 720, 480)
+QUALITIES = (1080, 720, 480, 360)
 
 
 def parse_quality(value: str) -> int:
     text = value.strip().lower().rstrip("p")
+    allowed = ", ".join(str(item) for item in QUALITIES)
     try:
         height = int(text)
     except ValueError as exc:
-        raise ValueError("quality must be 1080, 720, or 480") from exc
+        raise ValueError(f"quality must be {allowed}") from exc
     if height not in QUALITIES:
-        raise ValueError("quality must be 1080, 720, or 480")
+        raise ValueError(f"quality must be {allowed}")
     return height
 
 

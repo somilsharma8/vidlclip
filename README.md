@@ -2,7 +2,7 @@
 
 A simple tool that **downloads a YouTube video**, or **saves just a clip** from it (for example from 1:20 to 2:05).
 
-You can choose **1080p**, **720p**, or **480p**. If the size you pick isn’t available, it uses the next size down.
+You can choose **1080p**, **720p**, **480p**, or **360p**. If the size you pick isn’t available, it uses the next size down.
 
 You do **not** need to know programming. You install it once, then run a short command.
 
@@ -53,7 +53,19 @@ Check that it worked:
 vidclip doctor
 ```
 
-You should see lines for Python, ffmpeg, and js. If instead you see `'vidclip' is not recognized`, close PowerShell and open a brand-new window, then try `vidclip doctor` again.
+You should see lines for Python, ffmpeg, and js.
+
+**If it says `vidclip` is not recognized:**
+
+1. You must open a **brand-new** PowerShell window after `install.bat` (old windows do not pick up PATH).
+2. Or run it from the vidclip folder (this works even without PATH):
+
+```text
+cd C:\Code\vid-clipper
+.\vidclip.cmd doctor
+```
+
+Replace `C:\Code\vid-clipper` with the folder that contains `install.bat` if yours is different.
 
 ---
 
@@ -94,7 +106,14 @@ That only refreshes the YouTube helper. It does **not** replace a full reinstall
 
 ### Easiest way
 
-In PowerShell, type:
+In PowerShell, first go to the vidclip folder if `vidclip` is not recognized:
+
+```text
+cd C:\Code\vid-clipper
+.\vidclip.cmd
+```
+
+If `vidclip` works on its own after install, you can just type:
 
 ```text
 vidclip
@@ -105,7 +124,7 @@ Then:
 1. Paste the YouTube link and press Enter
 2. For a **full video**, leave Start time and End time blank (just press Enter)
 3. For a **clip**, type times like `1:20` and `2:05`
-4. Choose quality: `1080`, `720`, or `480` (press Enter for 1080)
+4. Choose quality: `1080`, `720`, `480`, or `360` (press Enter for 1080)
 5. Leave “Save as” blank unless you want a specific file name
 
 When it finishes, it prints **Saved:** and the file location.
@@ -124,11 +143,12 @@ Clip from 1 minute 20 seconds to 2 minutes 5 seconds:
 vidclip "https://www.youtube.com/watch?v=VIDEO_ID" --start 1:20 --end 2:05
 ```
 
-720p or 480p (smaller file, faster download):
+720p, 480p, or 360p (smaller file, faster download):
 
 ```text
 vidclip "https://www.youtube.com/watch?v=VIDEO_ID" --quality 720
 vidclip "https://www.youtube.com/watch?v=VIDEO_ID" -q 480
+vidclip "https://www.youtube.com/watch?v=VIDEO_ID" -q 360
 ```
 
 Save with a name you choose, in a folder you choose:
@@ -147,10 +167,10 @@ The file is saved in **the folder you are in** when you run the command, unless 
 
 | What you see | What to do |
 |---|---|
-| `'vidclip' is not recognized` | Close the terminal, open a **new** PowerShell window, try again. If it still fails, run `install.bat` again. |
+| `'vidclip' is not recognized` | Open a **new** PowerShell window after install. Or go to the vidclip folder and run `.\vidclip.cmd` instead of `vidclip`. |
 | Python was not found during install | Reinstall Python and tick **Add python.exe to PATH**, then open a new window and run `install.bat` again. |
 | “This video is not available” but you can watch it in the browser | In PowerShell run `vidclip update`, then try the download again. If that is not enough, run `install.bat` again from the latest folder. |
-| New features are missing (for example 720p / 480p) | You have an old install. Run `install.bat` again from the latest folder. |
+| New features are missing (for example 360p) | You have an old install. Run `install.bat` again from the latest folder. |
 | First download is slow / mentions Deno | That’s normal the first time. vidclip is fetching a helper it needs for YouTube. |
 
 ---
